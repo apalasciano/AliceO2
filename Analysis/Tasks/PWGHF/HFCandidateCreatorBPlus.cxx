@@ -247,7 +247,6 @@ struct HFCandidateCreatorBPlusMC {
     for (auto& particle : particlesMC) {
       //Printf("New gen. candidate");
       flag = 0;
-      origin = 0;
       // B± → D0bar(D0) π± → (K± π∓) π±
       //Printf("Checking B± → D0(bar) π±");
       if (RecoDecay::isMatchedMCGen(particlesMC, particle, 521, array{-421, +kPiPlus}, true, &sign, 1)) {
