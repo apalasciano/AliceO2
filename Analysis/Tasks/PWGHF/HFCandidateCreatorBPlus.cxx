@@ -229,7 +229,6 @@ struct HFCandidateCreatorBPlusMC {
     for (auto& candidate : candidates) {
       //Printf("New rec. candidate");
       flag = 0;
-      //channel = 0;
       auto D0barTrack = candidate.index0();
       auto arrayDaughters = array{candidate.index1_as<aod::BigTracksMC>(), D0barTrack.index0_as<aod::BigTracksMC>(), D0barTrack.index1_as<aod::BigTracksMC>()};
 
