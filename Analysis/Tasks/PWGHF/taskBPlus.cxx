@@ -105,7 +105,7 @@ struct TaskBPlusMC {
   Configurable<double> cutYCandMax{"cutYCandMax", -1., "Upper cut rap."};
   // Filter filterSelectCandidates = (aod::hf_selcandidate_bplus::isSelBplusToD0Pi >= selectionFlagB);
 
-  void process(soa::Join<aod::HfCandBPlus, aod::HfCandBPMCRec> const& candidates, soa::Join<aod::McParticles, aod::HfCandBPMCGen> const& particlesMC, aod::BigTracksMC)
+  void process(soa::Join<aod::HfCandBPlus, aod::HfCandBPMCRec> const& candidates, soa::Join<aod::McParticles, aod::HfCandBPMCGen> const& particlesMC, aod::BigTracksMC const& tracks)
   {
     // MC rec.
     for (auto& candidate : candidates) {
