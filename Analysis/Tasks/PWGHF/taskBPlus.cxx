@@ -34,7 +34,7 @@ void customize(std::vector<o2::framework::ConfigParamSpec>& workflowOptions)
 
 #include "Framework/runDataProcessing.h"
 
-/// BPlus analysis task
+/// B+ analysis task
 struct TaskBPlus {
   HistogramRegistry registry{
     "registry",
