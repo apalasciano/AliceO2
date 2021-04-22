@@ -313,14 +313,14 @@ DECLARE_SOA_TABLE(HfCandProng2MCRec, "AOD", "HFCANDP2MCREC",
 DECLARE_SOA_TABLE(HfCandProng2MCGen, "AOD", "HFCANDP2MCGEN",
                   hf_cand_prong2::FlagMCMatchGen,
                   hf_cand_prong2::OriginMCGen);
-                  
+
 // specific BPlus candidate properties
 namespace hf_cand_bplus
 {
 DECLARE_SOA_INDEX_COLUMN_FULL(Index0, index0, int, HfCandProng2, "_0"); // D0 index
 // MC matching result:
-DECLARE_SOA_COLUMN(FlagMCMatchRec, flagMCMatchRec, int8_t);         // reconstruction level
-DECLARE_SOA_COLUMN(FlagMCMatchGen, flagMCMatchGen, int8_t);         // generator level
+DECLARE_SOA_COLUMN(FlagMCMatchRec, flagMCMatchRec, int8_t); // reconstruction level
+DECLARE_SOA_COLUMN(FlagMCMatchGen, flagMCMatchGen, int8_t); // generator level
 } // namespace hf_cand_bplus
 
 // declare dedicated BPlus decay candidate table
@@ -408,7 +408,6 @@ auto CosThetaStarBplus(const T& candidate)
 {
   return candidate.cosThetaStar(array{RecoDecay::getMassPDG(421), RecoDecay::getMassPDG(kPiPlus)}, RecoDecay::getMassPDG(521), 1);
 }
-
 
 // specific 3-prong decay properties
 namespace hf_cand_prong3
