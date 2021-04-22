@@ -363,8 +363,8 @@ namespace hf_cand_bplus
 {
 DECLARE_SOA_INDEX_COLUMN_FULL(Index0, index0, int, HfCandProng2, "_0"); //! D0 index
 // MC matching result:
-DECLARE_SOA_COLUMN(FlagMCMatchRec, flagMCMatchRec, int8_t);         //! reconstruction level
-DECLARE_SOA_COLUMN(FlagMCMatchGen, flagMCMatchGen, int8_t);         //! generator level
+DECLARE_SOA_COLUMN(FlagMCMatchRec, flagMCMatchRec, int8_t); //! reconstruction level
+DECLARE_SOA_COLUMN(FlagMCMatchGen, flagMCMatchGen, int8_t); //! generator level
 } // namespace hf_cand_bplus
 
 // declare dedicated BPlus decay candidate table
