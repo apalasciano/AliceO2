@@ -137,7 +137,7 @@ struct TaskBPlusMC {
     // MC gen. level
     //Printf("MC Particles: %d", particlesMC.size());
     for (auto& particle : particlesMC) {
-      if (std::abs(particle.flagMCMatchGen()) == 1 << BPlusToD0Pi) { 
+      if (std::abs(particle.flagMCMatchGen()) == 1 << BPlusToD0Pi) {
         registry.fill(HIST("hPtGen"), particle.pt());
         float ptProngs[2];
         int counter = 0;
