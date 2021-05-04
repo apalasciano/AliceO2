@@ -15,10 +15,10 @@
 /// \author Antonio Palasciano <antonio.palasciano@cern.ch>,
 /// \author Deepa Thomas <deepa.thomas@cern.ch>, UT Austin
 
-#include "AnalysisDataModel/HFCandidateSelectionTables.h"
-#include "AnalysisDataModel/HFSecondaryVertex.h"
 #include "Framework/AnalysisTask.h"
 #include "Framework/HistogramRegistry.h"
+#include "AnalysisDataModel/HFSecondaryVertex.h"
+#include "AnalysisDataModel/HFCandidateSelectionTables.h"
 
 using namespace o2;
 using namespace o2::aod;
@@ -27,9 +27,9 @@ using namespace o2::aod::hf_cand_prong2;
 using namespace o2::aod::hf_cand_bplus;
 using namespace o2::framework::expressions;
 
-void customize(std::vector<o2::framework::ConfigParamSpec> &workflowOptions) {
-  ConfigParamSpec optionDoMC{
-      "doMC", VariantType::Bool, false, {"Fill MC histograms."}};
+void customize(std::vector<o2::framework::ConfigParamSpec>& workflowOptions)
+{
+  ConfigParamSpec optionDoMC{"doMC", VariantType::Bool, false, {"Fill MC histograms."}};
   workflowOptions.push_back(optionDoMC);
 }
 
@@ -38,56 +38,29 @@ void customize(std::vector<o2::framework::ConfigParamSpec> &workflowOptions) {
 /// BPlus analysis task
 struct TaskBPlus {
   HistogramRegistry registry{
-      "registry",
-      {{"hMass",
-        "2-prong candidates;inv. mass (D0(bar) #pi) (GeV/#it{c}^{2});entries",
-        {HistType::kTH1F, {{500, 0., 10.}}}},
-       {"hPtProng0",
-        "2-prong candidates;prong 0 #it{p}_{T} (GeV/#it{c});entries",
-        {HistType::kTH1F, {{100, 0., 10.}}}},
-       {"hPtProng1",
-        "2-prong candidates;prong 1 #it{p}_{T} (GeV/#it{c});entries",
-        {HistType::kTH1F, {{100, 0., 10.}}}},
-       {"hdeclength",
-        "2-prong candidates;decay length (cm);entries",
-        {HistType::kTH1F, {{200, 0., 2.}}}},
-       {"hdeclengthxy",
-        "2-prong candidates;decay length xy (cm);entries",
-        {HistType::kTH1F, {{200, 0., 2.}}}},
-       {"hd0Prong0",
-        "2-prong candidates;prong 0 DCAxy to prim. vertex (cm);entries",
-        {HistType::kTH1F, {{100, -1., 1.}}}},
-       {"hd0Prong1",
-        "2-prong candidates;prong 1 DCAxy to prim. vertex (cm);entries",
-        {HistType::kTH1F, {{100, -1., 1.}}}},
-       {"hCPA",
-        "2-prong candidates;cosine of pointing angle;entries",
-        {HistType::kTH1F, {{110, -1.1, 1.1}}}},
-       {"hEta",
-        "2-prong candidates;candidate #it{#eta};entries",
-        {HistType::kTH1F, {{100, -2., 2.}}}},
-       {"hImpParErr",
-        "2-prong candidates;impact parameter error (cm);entries",
-        {HistType::kTH1F, {{100, -1., 1.}}}},
-       {"hDecLenErr",
-        "2-prong candidates;decay length error (cm);entries",
-        {HistType::kTH1F, {{100, 0., 1.}}}},
-       {"hDecLenXYErr",
-        "2-prong candidates;decay length xy error (cm);entries",
-        {HistType::kTH1F, {{100, 0., 1.}}}},
-       {"hPtCand",
-        "2-prong candidates;candidate #it{p}_{T} (GeV/#it{c});entries",
-        {HistType::kTH1F, {{100, 0., 10.}}}}}};
+    "registry",
+    {{"hMass", "2-prong candidates;inv. mass (D0(bar) #pi) (GeV/#it{c}^{2});entries", {HistType::kTH1F, {{500, 0., 10.}}}},
+     {"hPtProng0", "2-prong candidates;prong 0 #it{p}_{T} (GeV/#it{c});entries", {HistType::kTH1F, {{100, 0., 10.}}}},
+     {"hPtProng1", "2-prong candidates;prong 1 #it{p}_{T} (GeV/#it{c});entries", {HistType::kTH1F, {{100, 0., 10.}}}},
+     {"hdeclength", "2-prong candidates;decay length (cm);entries", {HistType::kTH1F, {{200, 0., 2.}}}},
+     {"hdeclengthxy", "2-prong candidates;decay length xy (cm);entries", {HistType::kTH1F, {{200, 0., 2.}}}},
+     {"hd0Prong0", "2-prong candidates;prong 0 DCAxy to prim. vertex (cm);entries", {HistType::kTH1F, {{100, -1., 1.}}}},
+     {"hd0Prong1", "2-prong candidates;prong 1 DCAxy to prim. vertex (cm);entries", {HistType::kTH1F, {{100, -1., 1.}}}},
+     {"hCPA", "2-prong candidates;cosine of pointing angle;entries", {HistType::kTH1F, {{110, -1.1, 1.1}}}},
+     {"hEta", "2-prong candidates;candidate #it{#eta};entries", {HistType::kTH1F, {{100, -2., 2.}}}},
+     {"hImpParErr", "2-prong candidates;impact parameter error (cm);entries", {HistType::kTH1F, {{100, -1., 1.}}}},
+     {"hDecLenErr", "2-prong candidates;decay length error (cm);entries", {HistType::kTH1F, {{100, 0., 1.}}}},
+     {"hDecLenXYErr", "2-prong candidates;decay length xy error (cm);entries", {HistType::kTH1F, {{100, 0., 1.}}}},
+     {"hPtCand", "2-prong candidates;candidate #it{p}_{T} (GeV/#it{c});entries", {HistType::kTH1F, {{100, 0., 10.}}}}}};
 
-  // Configurable<int> selectionFlagBPlus{"selectionFlagBPlus", 1, "Selection
-  // Flag for BPlus"};
+  // Configurable<int> selectionFlagBPlus{"selectionFlagBPlus", 1, "Selection Flag for BPlus"};
   Configurable<double> cutYCandMax{"cutYCandMax", -1., "max. cand. rapidity"};
-  // Filter filterSelectCandidates =
-  // (aod::hf_selcandidate_bplus::isSelBPlusToD0Pi >= selectionFlagBPlus);
+  // Filter filterSelectCandidates = (aod::hf_selcandidate_bplus::isSelBPlusToD0Pi >= selectionFlagBPlus);
 
   // To be Filtered once selector ready
-  void process(aod::HfCandBPlus const &candidates) {
-    for (auto &candidate : candidates) {
+  void process(aod::HfCandBPlus const& candidates)
+  {
+    for (auto& candidate : candidates) {
       if (!(candidate.hfflag() & 1 << BPlusToD0Pi)) {
         continue;
       }
@@ -112,70 +85,31 @@ struct TaskBPlus {
 
 struct TaskBPlusMC {
   HistogramRegistry registry{
-      "registry",
-      {{"hPtRecSig",
-        "2-prong candidates (rec. matched);#it{p}_{T} (GeV/#it{c});entries",
-        {HistType::kTH1F, {{100, 0., 10.}}}},
-       {"hPtRecBg",
-        "2-prong candidates (rec. unmatched);#it{p}_{T} (GeV/#it{c});entries",
-        {HistType::kTH1F, {{100, 0., 10.}}}},
-       {"hPtGen",
-        "2-prong candidates (gen. matched);#it{p}_{T} (GeV/#it{c});entries",
-        {HistType::kTH1F, {{100, 0., 10.}}}},
-       {"hPtGenProng0",
-        "2-prong candidates (gen. matched);prong 0 #it{p}_{T} "
-        "(GeV/#it{c});entries",
-        {HistType::kTH1F, {{100, 0., 10.}}}},
-       {"hPtGenProng1",
-        "2-prong candidates (gen. matched);prong 1 #it{p}_{T} "
-        "(GeV/#it{c});entries",
-        {HistType::kTH1F, {{100, 0., 10.}}}},
-       {"hPtGenSig",
-        "2-prong candidates (rec. matched);#it{p}_{T}^{gen.} "
-        "(GeV/#it{c});entries",
-        {HistType::kTH1F, {{100, 0., 10.}}}},
-       {"hCPARecSig",
-        "2-prong candidates (rec. matched);cosine of pointing angle;entries",
-        {HistType::kTH1F, {{110, -1.1, 1.1}}}},
-       {"hCPARecBg",
-        "2-prong candidates (rec. unmatched);cosine of pointing angle;entries",
-        {HistType::kTH1F, {{110, -1.1, 1.1}}}},
-       {"hEtaRecSig",
-        "2-prong candidates (rec. matched);#it{#eta};entries",
-        {HistType::kTH1F, {{100, -2., 2.}}}},
-       {"hEtaRecBg",
-        "2-prong candidates (rec. unmatched);#it{#eta};entries",
-        {HistType::kTH1F, {{100, -2., 2.}}}},
-       {"hEtaGen",
-        "2-prong candidates (gen. matched);#it{#eta};entries",
-        {HistType::kTH1F, {{100, -2., 2.}}}},
-       {"hMassRecSig",
-        "2-prong candidates (rec. matched);inv. mass (D0bar #pi+) "
-        "(GeV/#it{c}^{2});entries",
-        {HistType::kTH1F, {{500, 0., 10.}}}},
-       {"hMassRecBg",
-        "2-prong candidates (rec. unmatched);inv. mass (D0bar #pi+) "
-        "(GeV/#it{c}^{2});entries",
-        {HistType::kTH1F, {{500, 0., 10.}}}},
-       {"hDecLengthRecSig",
-        "2-prong candidates (rec. matched);decay length (cm);entries",
-        {HistType::kTH1F, {{200, 0., 2.}}}},
-       {"hDecLengthRecBg",
-        "2-prong candidates (rec. unmatched);decay length (cm);entries",
-        {HistType::kTH1F, {{200, 0., 2.}}}}}};
+    "registry",
+    {{"hPtRecSig", "2-prong candidates (rec. matched);#it{p}_{T} (GeV/#it{c});entries", {HistType::kTH1F, {{100, 0., 10.}}}},
+     {"hPtRecBg", "2-prong candidates (rec. unmatched);#it{p}_{T} (GeV/#it{c});entries", {HistType::kTH1F, {{100, 0., 10.}}}},
+     {"hPtGen", "2-prong candidates (gen. matched);#it{p}_{T} (GeV/#it{c});entries", {HistType::kTH1F, {{100, 0., 10.}}}},
+     {"hPtGenProng0", "2-prong candidates (gen. matched);prong 0 #it{p}_{T} (GeV/#it{c});entries", {HistType::kTH1F, {{100, 0., 10.}}}},
+     {"hPtGenProng1", "2-prong candidates (gen. matched);prong 1 #it{p}_{T} (GeV/#it{c});entries", {HistType::kTH1F, {{100, 0., 10.}}}},
+     {"hPtGenSig", "2-prong candidates (rec. matched);#it{p}_{T}^{gen.} (GeV/#it{c});entries", {HistType::kTH1F, {{100, 0., 10.}}}},
+     {"hCPARecSig", "2-prong candidates (rec. matched);cosine of pointing angle;entries", {HistType::kTH1F, {{110, -1.1, 1.1}}}},
+     {"hCPARecBg", "2-prong candidates (rec. unmatched);cosine of pointing angle;entries", {HistType::kTH1F, {{110, -1.1, 1.1}}}},
+     {"hEtaRecSig", "2-prong candidates (rec. matched);#it{#eta};entries", {HistType::kTH1F, {{100, -2., 2.}}}},
+     {"hEtaRecBg", "2-prong candidates (rec. unmatched);#it{#eta};entries", {HistType::kTH1F, {{100, -2., 2.}}}},
+     {"hEtaGen", "2-prong candidates (gen. matched);#it{#eta};entries", {HistType::kTH1F, {{100, -2., 2.}}}},
+     {"hMassRecSig", "2-prong candidates (rec. matched);inv. mass (D0bar #pi+) (GeV/#it{c}^{2});entries", {HistType::kTH1F, {{500, 0., 10.}}}},
+     {"hMassRecBg", "2-prong candidates (rec. unmatched);inv. mass (D0bar #pi+) (GeV/#it{c}^{2});entries", {HistType::kTH1F, {{500, 0., 10.}}}},
+     {"hDecLengthRecSig", "2-prong candidates (rec. matched);decay length (cm);entries", {HistType::kTH1F, {{200, 0., 2.}}}},
+     {"hDecLengthRecBg", "2-prong candidates (rec. unmatched);decay length (cm);entries", {HistType::kTH1F, {{200, 0., 2.}}}}}};
 
-  // Configurable<int> selectionFlagB{"selectionFlagB", 1, "Selection Flag for
-  // B"};
+  // Configurable<int> selectionFlagB{"selectionFlagB", 1, "Selection Flag for B"};
   Configurable<double> cutYCandMax{"cutYCandMax", -1., "Upper cut rap."};
-  // Filter filterSelectCandidates =
-  // (aod::hf_selcandidate_bplus::isSelBplusToD0Pi >= selectionFlagB);
+  // Filter filterSelectCandidates = (aod::hf_selcandidate_bplus::isSelBplusToD0Pi >= selectionFlagB);
 
-  void
-  process(soa::Join<aod::HfCandBPlus, aod::HfCandBPMCRec> const &candidates,
-          soa::Join<aod::McParticles, aod::HfCandBPMCGen> const &particlesMC,
-          aod::BigTracksMC const &tracks) {
+  void process(soa::Join<aod::HfCandBPlus, aod::HfCandBPMCRec> const& candidates, soa::Join<aod::McParticles, aod::HfCandBPMCGen> const& particlesMC, aod::BigTracksMC const& tracks)
+  {
     // MC rec.
-    for (auto &candidate : candidates) {
+    for (auto& candidate : candidates) {
       if (!(candidate.hfflag() & 1 << BPlusToD0Pi) {
         continue;
       }
@@ -184,12 +118,7 @@ struct TaskBPlusMC {
       }
       if (std::abs(candidate.flagMCMatchRec()) == 1 << BPlusToD0Pi) {
         // Get the corresponding MC particle.
-        auto indexMother = RecoDecay::getMother(
-            particlesMC,
-            candidate.index1_as<aod::BigTracksMC>()
-                .mcParticle_as<
-                    soa::Join<aod::McParticles, aod::HfCandBPMCGen>>(),
-            521, true);
+        auto indexMother = RecoDecay::getMother(particlesMC, candidate.index1_as<aod::BigTracksMC>().mcParticle_as<soa::Join<aod::McParticles, aod::HfCandBPMCGen>>(), 521, true);
         auto particleMother = particlesMC.iteratorAt(indexMother);
         registry.fill(HIST("hPtGenSig"), particleMother.pt());
         registry.fill(HIST("hPtRecSig"), candidate.pt());
@@ -206,9 +135,9 @@ struct TaskBPlusMC {
       }
     } // rec
     // MC gen. level
-    // Printf("MC Particles: %d", particlesMC.size());
-    for (auto &particle : particlesMC) {
-      if (std::abs(particle.flagMCMatchGen()) == 1 << BPlusToD0Pi) {
+    //Printf("MC Particles: %d", particlesMC.size());
+    for (auto& particle : particlesMC) {
+      if (std::abs(particle.flagMCMatchGen()) == 1 << BPlusToD0Pi) { 
         registry.fill(HIST("hPtGen"), particle.pt());
         float ptProngs[2];
         int counter = 0;
@@ -220,17 +149,17 @@ struct TaskBPlusMC {
         registry.fill(HIST("hPtGenProng1"), ptProngs[1]);
         registry.fill(HIST("hEtaGen"), particle.eta());
       }
-    } // gen
+    } //gen
   }   // process
 };    // struct
 
-WorkflowSpec defineDataProcessing(ConfigContext const &cfgc) {
+WorkflowSpec defineDataProcessing(ConfigContext const& cfgc)
+{
   WorkflowSpec workflow{
-      adaptAnalysisTask<TaskBPlus>(cfgc, TaskName{"hf-task-bplus"})};
+    adaptAnalysisTask<TaskBPlus>(cfgc, TaskName{"hf-task-bplus"})};
   const bool doMC = cfgc.options().get<bool>("doMC");
   if (doMC) {
-    workflow.push_back(
-        adaptAnalysisTask<TaskBPlusMC>(cfgc, TaskName{"hf-task-bplus-mc"}));
+    workflow.push_back(adaptAnalysisTask<TaskBPlusMC>(cfgc, TaskName{"hf-task-bplus-mc"}));
   }
   return workflow;
 }
