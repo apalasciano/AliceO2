@@ -42,6 +42,13 @@ DECLARE_SOA_COLUMN(IsSelJpsiToEE, isSelJpsiToEE, int); //!
 } // namespace hf_selcandidate_jpsi
 DECLARE_SOA_TABLE(HFSelJpsiToEECandidate, "AOD", "HFSELJPSICAND", //!
                   hf_selcandidate_jpsi::IsSelJpsiToEE);
+
+namespace hf_selcandidate_bplus
+{
+DECLARE_SOA_COLUMN(IsSelBPlusToD0Pi, isSelBPlusToD0Pi, int);
+} // namespace hf_selcandidate_bplus
+DECLARE_SOA_TABLE(HFSelBPlusToD0PiCandidate, "AOD", "HFSELBPLUSCAND", //!
+                  hf_selcandidate_bplus::IsSelBPlusToD0Pi);
 } // namespace o2::aod
 
 namespace o2::aod

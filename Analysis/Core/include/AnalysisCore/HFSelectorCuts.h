@@ -28,7 +28,8 @@ enum Code {
   kDPlus = 411,
   kLambdaCPlus = 4122,
   kXiCPlus = 4232,
-  kJpsi = 443
+  kJpsi = 443,
+  kBPlus = 521
 };
 } // namespace pdg
 
@@ -377,6 +378,49 @@ static const std::vector<std::string> pTBinLabels = {
 // column labels
 static const std::vector<std::string> cutVarLabels = {"m", "DCA_xy", "DCA_z", "pT El"};
 } // namespace hf_cuts_jpsi_toee
+
+namespace hf_cuts_bplus_tod0pi
+{
+static constexpr int npTBins = 8;
+static constexpr int nCutVars = 9;
+// default values for the pT bin edges (can be used to configure histogram axis)
+// offset by 1 from the bin numbers in cuts array
+constexpr double pTBins[npTBins + 1] = {
+  0,
+  0.5,
+  1.0,
+  2.0,
+  3.0,
+  4.0,
+  5.0,
+  7.0,
+  10.0
+};
+auto pTBins_v = std::vector<double>{pTBins, pTBins + npTBins + 1};
+
+// default values for the cuts
+//                                            m   CPA  d0D0 d0Pi pTD0 pTPi Bdeclen DeltaMD0 CPA_D0
+constexpr double cuts[npTBins][nCutVars] = {{0.5, 0.9, 0.1, 0.1, 1.0, 0.15, 0.05, 0.1, 0.80},  /* 0<pt<0.5 */
+                                            {0.5, 0.9, 0.1, 0.1, 1.0, 0.15, 0.05, 0.1, 0.80},  /* 0.5<pt<1 */
+                                            {0.5, 0.9, 0.1, 0.1, 1.0, 0.15, 0.05, 0.1, 0.80},  /* 1<pt<2   */
+                                            {0.5, 0.9, 0.1, 0.1, 1.0, 0.15, 0.05, 0.1, 0.80},  /* 2<pt<3   */
+                                            {0.5, 0.9, 0.1, 0.1, 1.0, 0.15, 0.05, 0.1, 0.80},  /* 3<pt<4   */
+                                            {0.5, 0.9, 0.1, 0.1, 1.0, 0.15, 0.05, 0.1, 0.80},  /* 4<pt<5   */
+                                            {0.5, 0.9, 0.1, 0.1, 1.0, 0.15, 0.05, 0.1, 0.80},  /* 5<pt<7   */
+                                            {0.5, 0.9, 0.1, 0.1, 3.0, 0.15, 0.05, 0.1, 0.80}}; /* 7<pt<10 */
+// row labels
+static const std::vector<std::string> pTBinLabels = {
+  "pT bin 0",
+  "pT bin 1",
+  "pT bin 2",
+  "pT bin 3",
+  "pT bin 4",
+  "pT bin 5",
+  "pT bin 6",
+  "pT bin 7"};
+// column labels
+static const std::vector<std::string> cutVarLabels = {"m", "CPA", "d0 D0", "d0 Pi", "pT D0", "pT Pi", "B decLen", "DeltaMD0", "CPA D0"};
+} // namespace hf_cuts_bplus_tod0pi
 } // namespace o2::analysis
 
 #endif // HF_SELECTOR_CUTS_H_
