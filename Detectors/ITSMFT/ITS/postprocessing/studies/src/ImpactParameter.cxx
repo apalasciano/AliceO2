@@ -19,6 +19,11 @@
 #include "ReconstructionDataFormats/VtxTrackRef.h"
 #include "ReconstructionDataFormats/PrimaryVertex.h"
 #include "DataFormatsGlobalTracking/RecoContainer.h"
+#include "DetectorsVertexing/PVertexer.h"
+#include "DetectorsBase/Propagator.h"
+#include "CommonUtils/TreeStreamRedirector.h"
+#include <TH1F.h>
+#include <TH2F.h>
 
 namespace o2
 {
@@ -37,6 +42,7 @@ class ImpactParameterStudy : public Task
  public:
   ImpactParameterStudy(std::shared_ptr<DataRequest> dr, mask_t src) : mDataRequest(dr), mTracksSrc(src){};
   ~ImpactParameterStudy() final = default;
+  void init(InitContext& ic) final;
   void run(ProcessingContext&) final;
   void endOfStream(EndOfStreamContext&) final;
   void finaliseCCDB(ConcreteDataMatcher&, void*) final;
@@ -45,11 +51,44 @@ class ImpactParameterStudy : public Task
  private:
   void updateTimeDependentParams(ProcessingContext& pc);
   GTrackID::mask_t mTracksSrc{};
+  std::unique_ptr<o2::utils::TreeStreamRedirector> mDBGOut;
+  // output histograms
+  std::unique_ptr<TH2F> mHisto_X_PVrefitChi2minus1{};
+  std::unique_ptr<TH2F> mHisto_Y_PVrefitChi2minus1{};
+  std::unique_ptr<TH2F> mHisto_Z_PVrefitChi2minus1{};
+  std::unique_ptr<TH1F> mHisto_X_DeltaPVrefitChi2minus1{};
+  std::unique_ptr<TH1F> mHisto_Y_DeltaPVrefitChi2minus1{};
+  std::unique_ptr<TH1F> mHisto_Z_DeltaPVrefitChi2minus1{};
+  std::unique_ptr<TH1F> mHisto_ImpParXY{};
+  std::unique_ptr<TH1F> mHisto_ImpParZ{};
+  // output file
+  const std::string mOutName{"its_ImpParameter.root"};
 
   // Data
   std::shared_ptr<DataRequest> mDataRequest;
   gsl::span<const PVertex> mPVertices;
 };
+
+void ImpactParameterStudy::init(InitContext& ic)
+{
+  mDBGOut = std::make_unique<o2::utils::TreeStreamRedirector>(mOutName.c_str(), "recreate");
+  mHisto_X_PVrefitChi2minus1 = std::make_unique<TH2F>("h2_X_PvVsPVrefit", "#X PV vs PV_{-1}, #mum",  100, -10, 10, 100, -10, 10);
+  mHisto_X_PVrefitChi2minus1->SetDirectory(nullptr);
+  mHisto_Y_PVrefitChi2minus1 = std::make_unique<TH2F>("h2_Z_PvVsPVrefit", "#Y  PV vs PV_{-1}, #mum", 100, -10, 10, 100, -10, 10);
+  mHisto_Y_PVrefitChi2minus1->SetDirectory(nullptr);
+  mHisto_Z_PVrefitChi2minus1 = std::make_unique<TH2F>("h2_Z_PvVsPVrefit", "#Z PV vs PV_{-1}, #mum",  100, -10, 10, 100, -10, 10);
+  mHisto_Z_PVrefitChi2minus1->SetDirectory(nullptr);
+  mHisto_X_DeltaPVrefitChi2minus1 = std::make_unique<TH1F>("h_DeltaXPVrefit", "#DeltaX (PV-PV_{-1}), #mum", 100, -50, 50);
+  mHisto_X_DeltaPVrefitChi2minus1->SetDirectory(nullptr);
+  mHisto_Y_DeltaPVrefitChi2minus1 = std::make_unique<TH1F>("h_DeltaYPVrefit", "#DeltaY (PV-PV_{-1}), #mum", 100, -50, 50);
+  mHisto_Y_DeltaPVrefitChi2minus1->SetDirectory(nullptr);
+  mHisto_Z_DeltaPVrefitChi2minus1 = std::make_unique<TH1F>("h_DeltaZPVrefit", "#DeltaZ (PV-PV_{-1}), #mum", 100, -50, 50);
+  mHisto_Z_DeltaPVrefitChi2minus1->SetDirectory(nullptr);
+  mHisto_ImpParZ = std::make_unique<TH1F>("h1_ImpParZ", "Impact Parameter Z, #mum", 50, 0, 50);
+  mHisto_ImpParZ->SetDirectory(nullptr);
+  mHisto_ImpParXY = std::make_unique<TH1F>("h1_ImpParXY", "Impact Parameter XY, #mum", 50, 0, 50);
+  mHisto_ImpParXY->SetDirectory(nullptr);
+}
 
 void ImpactParameterStudy::run(ProcessingContext& pc)
 {
@@ -61,6 +100,14 @@ void ImpactParameterStudy::run(ProcessingContext& pc)
 
 void ImpactParameterStudy::process(o2::globaltracking::RecoContainer& recoData)
 {
+  o2::base::Propagator::MatCorrType matCorr = o2::base::Propagator::MatCorrType::USEMatCorrLUT;
+  o2::vertexing::PVertexer vertexer;
+  std::vector<o2::track::TrackParCov> vecPvContributorTrackParCov;
+  std::vector<int64_t> vec_globID_contr = {};
+
+  float impParRPhi, impParZ;
+  constexpr float toMicrometers = 10000.f; // Conversion from [cm] to [mum]
+  bool keepAllTracksPVrefit = false;
   auto trackIndex = recoData.getPrimaryVertexMatchedTracks(); // Global ID's for associated tracks
   auto vtxRefs = recoData.getPrimaryVertexMatchedTrackRefs(); // references from vertex to these track IDs
   auto pvertices = recoData.getPrimaryVertices();
@@ -68,21 +115,73 @@ void ImpactParameterStudy::process(o2::globaltracking::RecoContainer& recoData)
   int nv = vtxRefs.size() - 1;      // The last entry is for unassigned tracks, ignore them
   for (int iv = 0; iv < nv; iv++) { // Loop over PVs
     const auto& vtref = vtxRefs[iv];
-    const auto& pv = pvertices[iv];
+    const o2::dataformats::VertexBase& pv = pvertices[iv];
     int it = vtref.getFirstEntry(), itLim = it + vtref.getEntries();
     pv.print();
-    for (; it < itLim; it++) {
+/*     for (; it < itLim; it++) {
       auto tvid = trackIndex[it];
       if (!recoData.isTrackSourceLoaded(tvid.getSource())) {
         continue;
       }
-      const auto& trc = recoData.getTrackParam(tvid); // The actual track
+      const o2::track::TrackParCov& trc = recoData.getTrackParam(tvid); // The actual track
       if (it < 5) {
         trc.print();
       }
-    }
-  }
-}
+      vec_globID_contr.push_back(trackIndex[it]);
+      vecPvContributorTrackParCov.push_back(trc);
+    } // end loop tracks
+    it = vtref.getFirstEntry(), itLim = it + vtref.getEntries();
+    for (; it < itLim; it++) {
+      //vector of booleans to keep track of the track to be skipped
+      std::vector<bool> vec_useTrk_PVrefit(vec_globID_contr.size(), true);
+      auto tvid = trackIndex[it];
+      auto trackIterator = std::find(vec_globID_contr.begin(), vec_globID_contr.end(),trackIndex[it]);
+      if (trackIterator != vec_globID_contr.end()) {
+        o2::dataformats::VertexBase PVbase_recalculated;
+        /// this track contributed to the PV fit: let's do the refit without it
+        const int entry = std::distance(vec_globID_contr.begin(), trackIterator);
+        if (!keepAllTracksPVrefit) {
+            vec_useTrk_PVrefit[entry] = false; /// remove the track from the PV refitting
+        }
+        auto Pvtx_refitted = vertexer.refitVertex(vec_useTrk_PVrefit, pv); // vertex refit
+        // enable the dca recalculation for the current PV contributor, after removing it from the PV refit
+        bool recalc_imppar = true;
+        if (Pvtx_refitted.getChi2() < 0) {
+          LOG(info) << "---> Refitted vertex has bad chi2 = " << Pvtx_refitted.getChi2();
+          recalc_imppar = false;
+        }
+        vec_useTrk_PVrefit[entry] = true; /// restore the track for the next PV refitting
+        if (recalc_imppar) {
+          const double DeltaX = pv.getX() - Pvtx_refitted.getX();
+          const double DeltaY = pv.getY() - Pvtx_refitted.getY();
+          const double DeltaZ = pv.getZ() - Pvtx_refitted.getZ();
+          mHisto_X_PVrefitChi2minus1->Fill(pv.getX(), Pvtx_refitted.getX());
+          mHisto_Y_PVrefitChi2minus1->Fill(pv.getY(), Pvtx_refitted.getY());
+          mHisto_Z_PVrefitChi2minus1->Fill(pv.getZ(), Pvtx_refitted.getZ());
+          mHisto_X_DeltaPVrefitChi2minus1->Fill(DeltaX);
+          mHisto_Y_DeltaPVrefitChi2minus1->Fill(DeltaY);
+          mHisto_Z_DeltaPVrefitChi2minus1->Fill(DeltaZ);
+          
+          // fill the newly calculated PV
+          PVbase_recalculated.setX(Pvtx_refitted.getX());
+          PVbase_recalculated.setY(Pvtx_refitted.getY());
+          PVbase_recalculated.setZ(Pvtx_refitted.getZ());
+          PVbase_recalculated.setCov(Pvtx_refitted.getSigmaX2(), Pvtx_refitted.getSigmaXY(), Pvtx_refitted.getSigmaY2(), Pvtx_refitted.getSigmaXZ(), Pvtx_refitted.getSigmaYZ(), Pvtx_refitted.getSigmaZ2());
+
+          const o2::track::TrackParCov& trc = recoData.getTrackParam(tvid);
+          //auto trackPar = getTrackPar(trc);
+          o2::gpu::gpustd::array<float, 2> dcaInfo{-999., -999.};
+          if (o2::base::Propagator::Instance()->propagateToDCABxByBz({PVbase_recalculated.getX(), PVbase_recalculated.getY(), PVbase_recalculated.getZ()}, const_cast<o2::track::TrackParCov&>(trc), 2.f, matCorr, &dcaInfo)) {
+            impParRPhi = dcaInfo[0] * toMicrometers;
+            impParZ = dcaInfo[1] * toMicrometers;
+            mHisto_ImpParZ->Fill(impParZ);
+            mHisto_ImpParXY->Fill(impParRPhi);
+          } 
+        } //end recalc impact param
+      }
+    } // end loop tracks in pv*/
+  }   // end loop pv 
+}     // end process
 
 void ImpactParameterStudy::updateTimeDependentParams(ProcessingContext& pc)
 {
@@ -94,6 +193,18 @@ void ImpactParameterStudy::updateTimeDependentParams(ProcessingContext& pc)
 
 void ImpactParameterStudy::endOfStream(EndOfStreamContext& ec)
 {
+  mDBGOut.reset();
+  TFile fout(mOutName.c_str(), "update");
+  fout.WriteTObject(mHisto_X_PVrefitChi2minus1.get());
+  fout.WriteTObject(mHisto_Y_PVrefitChi2minus1.get());
+  fout.WriteTObject(mHisto_Z_PVrefitChi2minus1.get());
+  fout.WriteTObject(mHisto_X_DeltaPVrefitChi2minus1.get());
+  fout.WriteTObject(mHisto_Y_DeltaPVrefitChi2minus1.get());
+  fout.WriteTObject(mHisto_Z_DeltaPVrefitChi2minus1.get());
+  fout.WriteTObject(mHisto_ImpParZ.get());
+  fout.WriteTObject(mHisto_ImpParXY.get());
+  LOGP(info, "Stored Impact Parameters histograms {} and {} into {}", mHisto_ImpParZ->GetName(),mHisto_ImpParXY->GetName(), mOutName.c_str());
+  fout.Close();
 }
 
 void ImpactParameterStudy::finaliseCCDB(ConcreteDataMatcher& matcher, void* obj)

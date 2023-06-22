@@ -15,4 +15,6 @@ o2_add_library(ITSPostprocessing
                PUBLIC_LINK_LIBRARIES O2::GlobalTracking
                                      O2::GlobalTrackingWorkflowReaders
                                      O2::GlobalTrackingWorkflowHelpers
-                                     O2::DataFormatsGlobalTracking)
+                                     O2::DataFormatsGlobalTracking
+                                     O2::DetectorsVertexing
+                                     O2::DetectorsBase)
