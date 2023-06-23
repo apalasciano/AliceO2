@@ -61,11 +61,11 @@ WorkflowSpec defineDataProcessing(ConfigContext const& configcontext)
 
   o2::globaltracking::InputHelper::addInputSpecs(configcontext, specs, srcCls, srcTrc, srcTrc, useMC);
   o2::globaltracking::InputHelper::addInputSpecsPVertex(configcontext, specs, useMC);
-  o2::globaltracking::InputHelper::addInputSpecsSVertex(configcontext, specs);
+  //o2::globaltracking::InputHelper::addInputSpecsSVertex(configcontext, specs);
 
   // Declare specs related to studies hereafter
   specs.emplace_back(o2::its::study::getImpactParameterStudy(srcTrc, srcCls, useMC));
-  specs.emplace_back(o2::its::study::getK0sInvMassStudy(srcTrc, useMC));
+  //specs.emplace_back(o2::its::study::getK0sInvMassStudy(srcTrc, useMC));
 
   // configure dpl timer to inject correct firstTForbit: start from the 1st orbit of TF containing 1st sampled orbit
   o2::raw::HBFUtilsInitializer hbfIni(configcontext, specs);
