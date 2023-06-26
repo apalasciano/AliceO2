@@ -83,18 +83,15 @@ class ImpactParameterStudy : public Task
 void ImpactParameterStudy::init(InitContext& ic)
 {
   o2::base::GRPGeomHelper::instance().setRequest(mGGCCDBRequest);
-  LOGP(info, "nano");
-  auto pippo = TGeoGlobalMagField::Instance()->GetField();
-  LOGP(info, "pippo");
-  //auto* prop = o2::base::Propagator::Instance();
+
   mDBGOut = std::make_unique<o2::utils::TreeStreamRedirector>(mOutName.c_str(), "recreate");
   mHisto_contributorsPV = std::make_unique<TH1F>("nContrib_PVrefitNotDoable", "# Contributors per PV", 100, 0, 100);
   mHisto_contributorsPV->SetDirectory(nullptr);
-  mHisto_X_PVrefitChi2minus1 = std::make_unique<TH2F>("h2_X_PvVsPVrefit", "#X PV vs PV_{-1}, #mum",  100, -10, 10, 100, -10, 10);
+  mHisto_X_PVrefitChi2minus1 = std::make_unique<TH2F>("h2_X_PvVsPVrefit", "#X PV vs PV_{-1}, #mum", 100, -10, 10, 100, -10, 10);
   mHisto_X_PVrefitChi2minus1->SetDirectory(nullptr);
   mHisto_Y_PVrefitChi2minus1 = std::make_unique<TH2F>("h2_Z_PvVsPVrefit", "#Y  PV vs PV_{-1}, #mum", 100, -10, 10, 100, -10, 10);
   mHisto_Y_PVrefitChi2minus1->SetDirectory(nullptr);
-  mHisto_Z_PVrefitChi2minus1 = std::make_unique<TH2F>("h2_Z_PvVsPVrefit", "#Z PV vs PV_{-1}, #mum",  100, -10, 10, 100, -10, 10);
+  mHisto_Z_PVrefitChi2minus1 = std::make_unique<TH2F>("h2_Z_PvVsPVrefit", "#Z PV vs PV_{-1}, #mum", 100, -10, 10, 100, -10, 10);
   mHisto_Z_PVrefitChi2minus1->SetDirectory(nullptr);
   mHisto_X_DeltaPVrefitChi2minus1 = std::make_unique<TH1F>("h_DeltaXPVrefit", "#DeltaX (PV-PV_{-1}), #mum", 100, -50, 50);
   mHisto_X_DeltaPVrefitChi2minus1->SetDirectory(nullptr);
@@ -110,6 +107,7 @@ void ImpactParameterStudy::init(InitContext& ic)
 
 void ImpactParameterStudy::run(ProcessingContext& pc)
 {
+  o2::base::GRPGeomHelper::instance().checkUpdates(pc);
   o2::globaltracking::RecoContainer recoData;
   recoData.collectData(pc, *mDataRequest.get());
   updateTimeDependentParams(pc); // Make sure this is called after recoData.collectData, which may load some conditions
@@ -121,7 +119,7 @@ void ImpactParameterStudy::process(o2::globaltracking::RecoContainer& recoData)
   o2::base::Propagator::MatCorrType matCorr = o2::base::Propagator::MatCorrType::USEMatCorrLUT;
   std::vector<o2::track::TrackParCov> vecPvContributorTrackParCov;
   std::vector<int64_t> vec_globID_contr = {};
-  //o2::vertexing::PVertexer vertexer;
+  // o2::vertexing::PVertexer vertexer;
   float impParRPhi, impParZ;
   constexpr float toMicrometers = 10000.f; // Conversion from [cm] to [mum]
   bool keepAllTracksPVrefit = false;
@@ -132,7 +130,7 @@ void ImpactParameterStudy::process(o2::globaltracking::RecoContainer& recoData)
 
   int nv = vtxRefs.size() - 1;      // The last entry is for unassigned tracks, ignore them
   for (int iv = 0; iv < nv; iv++) { // Loop over PVs
-  LOG(info)<<"LA MADONNA";
+    LOG(info) << "LA MADONNA";
     const auto& vtref = vtxRefs[iv];
     const o2::dataformats::VertexBase& pv = pvertices[iv];
     int it = vtref.getFirstEntry(), itLim = it + vtref.getEntries();
@@ -149,16 +147,16 @@ void ImpactParameterStudy::process(o2::globaltracking::RecoContainer& recoData)
       vec_globID_contr.push_back(trackIndex[it]);
       vecPvContributorTrackParCov.push_back(trc);
     } // end loop tracks
-    
+
     it = vtref.getFirstEntry();
     // Preparation PVertexer refit
     LOG(info) << "BELZEBU`";
     o2::conf::ConfigurableParam::updateFromString("pvertexer.useMeanVertexConstraint=false");
-    //vertexer.init();
+    // vertexer.init();
     LOG(info) << "CIAo";
-    vec_globID_contr.clear(); 
+    vec_globID_contr.clear();
     vecPvContributorTrackParCov.clear();
-    //bool PVrefit_doable = vertexer.prepareVertexRefit(vecPvContributorTrackParCov, pv);
+    // bool PVrefit_doable = vertexer.prepareVertexRefit(vecPvContributorTrackParCov, pv);
     /*if (!PVrefit_doable) {
       LOG(info) << "Not enough tracks accepted for the refit --> Skipping vertex";
       mHisto_contributorsPV->Fill(vecPvContributorTrackParCov.size());
@@ -192,7 +190,7 @@ void ImpactParameterStudy::process(o2::globaltracking::RecoContainer& recoData)
           mHisto_X_DeltaPVrefitChi2minus1->Fill(DeltaX);
           mHisto_Y_DeltaPVrefitChi2minus1->Fill(DeltaY);
           mHisto_Z_DeltaPVrefitChi2minus1->Fill(DeltaZ);
-          
+
           // fill the newly calculated PV
           PVbase_recalculated.setX(Pvtx_refitted.getX());
           PVbase_recalculated.setY(Pvtx_refitted.getY());
@@ -207,13 +205,13 @@ void ImpactParameterStudy::process(o2::globaltracking::RecoContainer& recoData)
             impParZ = dcaInfo[1] * toMicrometers;
             mHisto_ImpParZ->Fill(impParZ);
             mHisto_ImpParXY->Fill(impParRPhi);
-          } 
-        } //end recalc impact param 
+          }
+        } //end recalc impact param
       }
     } //pv refit duable
     } // end loop tracks in pv */
-  }   // end loop pv 
-}     // end process
+  } // end loop pv
+} // end process
 
 void ImpactParameterStudy::updateTimeDependentParams(ProcessingContext& pc)
 {
@@ -223,27 +221,24 @@ void ImpactParameterStudy::updateTimeDependentParams(ProcessingContext& pc)
     initOnceDone = true;
     // Note: reading of the ITS AlpideParam needed for ITS timing is done by the RecoContainer
     auto grp = o2::base::GRPGeomHelper::instance().getGRPECS();
-    //LOGP(info, " **** ----> {}", o2::base::Propagator::Instance()->getNominalBz());
-    //mVertexer.init();
 
-    /*
-    const auto& alpParams = o2::itsmft::DPLAlpideParam<o2::detectors::DetID::ITS>::Instance();
-    if (!grp->isDetContinuousReadOut(DetID::ITS)) {
-      mITSROFrameLengthMUS = alpParams.roFrameLengthTrig / 1.e3; // ITS ROFrame duration in \mus
-    } else {
-      mITSROFrameLengthMUS = alpParams.roFrameLengthInBC * o2::constants::lhc::LHCBunchSpacingNS * 1e-3; // ITS ROFrame duration in \mus
-    }
-    mITSROFBiasMUS = alpParams.roFrameBiasInBC * o2::constants::lhc::LHCBunchSpacingNS * 1e-3;
-    if (o2::base::GRPGeomHelper::instance().getGRPECS()->getRunType() != o2::parameters::GRPECSObject::RunType::COSMICS) {
-      mVertexer.setBunchFilling(o2::base::GRPGeomHelper::instance().getGRPLHCIF()->getBunchFilling());
-    }
-    mVertexer.setITSROFrameLength(mITSROFrameLengthMUS);
+    // const auto& alpParams = o2::itsmft::DPLAlpideParam<o2::detectors::DetID::ITS>::Instance();
+    // if (!grp->isDetContinuousReadOut(DetID::ITS)) {
+    //   mITSROFrameLengthMUS = alpParams.roFrameLengthTrig / 1.e3;                                         // ITS ROFrame duration in \mus
+    // } else {
+    //   mITSROFrameLengthMUS = alpParams.roFrameLengthInBC * o2::constants::lhc::LHCBunchSpacingNS * 1e-3; // ITS ROFrame duration in \mus
+    // }
+    // mITSROFBiasMUS = alpParams.roFrameBiasInBC * o2::constants::lhc::LHCBunchSpacingNS * 1e-3;
+    // if (o2::base::GRPGeomHelper::instance().getGRPECS()->getRunType() != o2::parameters::GRPECSObject::RunType::COSMICS) {
+    //   mVertexer.setBunchFilling(o2::base::GRPGeomHelper::instance().getGRPLHCIF()->getBunchFilling());
+    // }
+    // mVertexer.setITSROFrameLength(mITSROFrameLengthMUS);
     LOGP(info, "prima");
     mVertexer.init();
     LOGP(info, "dopo");
     if (pc.services().get<const o2::framework::DeviceSpec>().inputTimesliceId == 0) {
-      //PVertexerParams::Instance().printKeyValues();
-    }*/
+      // PVertexerParams::Instance().printKeyValues();
+    }
   }
 }
 
@@ -260,12 +255,15 @@ void ImpactParameterStudy::endOfStream(EndOfStreamContext& ec)
   fout.WriteTObject(mHisto_Z_DeltaPVrefitChi2minus1.get());
   fout.WriteTObject(mHisto_ImpParZ.get());
   fout.WriteTObject(mHisto_ImpParXY.get());
-  LOGP(info, "Stored Impact Parameters histograms {} and {} into {}", mHisto_ImpParZ->GetName(),mHisto_ImpParXY->GetName(), mOutName.c_str());
+  LOGP(info, "Stored Impact Parameters histograms {} and {} into {}", mHisto_ImpParZ->GetName(), mHisto_ImpParXY->GetName(), mOutName.c_str());
   fout.Close();
 }
 
 void ImpactParameterStudy::finaliseCCDB(ConcreteDataMatcher& matcher, void* obj)
 {
+  if (o2::base::GRPGeomHelper::instance().finaliseCCDB(matcher, obj)) {
+    return;
+  }
 }
 
 DataProcessorSpec getImpactParameterStudy(mask_t srcTracksMask, mask_t srcClustersMask, bool useMC)
@@ -273,7 +271,7 @@ DataProcessorSpec getImpactParameterStudy(mask_t srcTracksMask, mask_t srcCluste
   std::vector<OutputSpec> outputs;
   auto dataRequest = std::make_shared<DataRequest>();
   dataRequest->requestTracks(srcTracksMask, useMC);
-  // dataRequest->requestClusters(srcClustersMask, useMC);
+
   dataRequest->requestPrimaryVertertices(useMC);
 
   auto ggRequest = std::make_shared<o2::base::GRPGeomRequest>(false,                             // orbitResetTime
@@ -289,7 +287,7 @@ DataProcessorSpec getImpactParameterStudy(mask_t srcTracksMask, mask_t srcCluste
     "its-study-impactparameter",
     dataRequest->inputs,
     outputs,
-    AlgorithmSpec{adaptFromTask<ImpactParameterStudy>(dataRequest,ggRequest, srcTracksMask)},
+    AlgorithmSpec{adaptFromTask<ImpactParameterStudy>(dataRequest, ggRequest, srcTracksMask)},
     Options{}};
 }
 } // namespace study
